@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0/EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="note.model.RenoteMapper">
+	<insert id="insertReply" parameterType="ReNote">
+		insert into recontents values(RECONTENTS_RE_QNA_IDX_SEQ.nextval,
+		#{qnA_idx}, #{re_QnA_Adminid}, #{re_QnA_content}, sysdate, #{idx})
+	</insert>
+	<select id="selectCh" parameterType="int" resultType="Note">
+		select qna_idx, ch from userboard where qna_idx=#{idx_fk}
+	</select>
+	<update id="updateinquriych" parameterType="Note">
+		update userboard set ch = #{ch} where qna_idx=#{qna_idx}
+	</update>
+	
+	<select id="selectReplyByIdx" parameterType="int" resultType="ReNote">
+		select * from recontents where qna_idx=#{qna_idx}
+	</select>
+</mapper>

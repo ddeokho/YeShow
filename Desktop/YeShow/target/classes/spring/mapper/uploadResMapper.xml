@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0/EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="upload.model.uploadResMapper">
+	
+	
+	<!-- 업로드된 식당 main에 보여주기 -->
+	<select id="listResPaging" resultType="res" parameterType="map">
+		
+		select a.upiname, b.upnum, upwriter, uprestaurant, uptitle, upindate, connum, idx, fonum, upstate from 
+		(select ROW_NUMBER() OVER(ORDER BY UPNUM DESC) RN, images.*  from images where (upnum,upinum) in (select upnum, min(upinum) from images group by upnum)) a
+		join restaurant b on a.upnum =b.upnum where RN BETWEEN #{start} AND #{end} order by upnum asc
+		
+	</select>
+	
+	
+	<select id="search" resultType="res" parameterType="map">
+		select a.upiname, b.upnum, upwriter, uprestaurant, uptitle, upindate, connum, idx, fonum, upstate from 
+		(select ROW_NUMBER() OVER(ORDER BY UPNUM DESC) RN, images.*  from images where (upnum,upinum) in (select upnum, min(upinum) from images group by upnum)) a
+		join restaurant b on a.upnum =b.upnum where RN BETWEEN #{start} AND #{end} and
+    	(uprestaurant like '%'||#{search}||'%' or connum like '%'||#{search}||'%' or uplocation like '%'||#{search}||'%' 
+   		 or uptitle like '%'||#{search}||'%' or fonum like '%'||#{search}||'%') order by upindate desc
+	</select>
+	
+	
+	<!-- 업로드된 식당 main 정보 보여주기 -->
+	<!-- <select id="" resultType="res">
+		select a.upiname, b.upnum, upwriter, uprestaurant, uptitle, upindate, connum, idx, fonum from 
+		(select *  from images where (upnum,upinum) in (select upnum, min(upinum) from images group by upnum)) a
+		join restaurant b on a.upnum =b.upnum
+	
+	</select> -->
+	
+	
+	
+	<select id="resCount" resultType="int">
+		select count(*) from restaurant
+	</select>
+	<!--====================-->
+	
+	<!-- 식당 상세정보 보기 -->
+	<select id="detailres" resultType="res" parameterType="int">
+		select * from restaurant where upnum=#{upnum}
+	</select>
+	
+	<!-- 식당 업로드   -->
+	<insert id="insertRes" parameterType="res">
+		insert into restaurant values(restaurant_upnum_seq.nextval, #{upwriter},#{uprestaurant}, #{upphon},#{uptitle},#{upmsg},sysdate,#{uplocation},#{connum},#{idx},#{fonum},#{upbusiness},#{uprest},#{upstate},#{upaccept})
+	</insert>
+	
+	<!-- 식당 사진 업로드  -->
+	<insert id="insertimg" parameterType="String">
+		insert into images values(images_upinum_seq.nextval,#{upiname},restaurant_upnum_seq.currval)
+	</insert>
+	
+	<!-- 식당 사진 재 업로드 -->
+	<insert id="reinsertimg" parameterType="resfile">
+		insert into images values(images_upinum_seq.nextval,#{upiname},#{upnum})
+	</insert>
+	
+	<!-- 식당 삭제 -->
+	<update id="delres">
+	
+		update restaurant set upstate=1 where upnum=#{upnum}
+		 
+	</update>
+	
+	
+	<!-- 리뷰, 메뉴 등등 에서 정보 가져오기 -->
+	<!-- <select id="resinfo" resultType="res" parameterType="int">
+		select * from restaurant where upnum=#{upnum}	
+	</select>	 -->
+	
+	
+	<!-- 별점 가져오기 -->	
+	<select id="selectstar" resultType="star">
+		select upnum, count(*) review, sum(res_star)/count(*) star from res_review group by upnum
+	</select>
+	
+	
+	<!-- 수정하기 -->
+	<select id="imgs" parameterType="int" resultType="resfile">
+		select * from images where upnum=#{upnum}
+	</select>
+	<!--  -->
+	
+	<!-- 수정할때 캐러셀 이미지 지우기 -->
+	<delete id="delimg" parameterType="int">
+		delete from images where upinum=#{upinum}
+	</delete>
+	
+	<!-- 식당 수정 -->
+	<update id="updateRes" parameterType="res">
+		update restaurant set upwriter=#{upwriter}, uprestaurant=#{uprestaurant}, upphon=#{upphon}, 
+		uptitle=#{uptitle}, upmsg=#{upmsg}, uplocation=#{uplocation}, connum=#{connum}, fonum=#{fonum},
+		upbusiness=#{upbusiness}, uprest=#{uprest}, upaccept=#{upaccept} where upnum=#{upnum}
+	</update>
+	
+	<!-- 예약폼 테이블 보여주기 -->
+	<select id="viewResTable" parameterType="int" resultType="table">
+		select * from ys_table where upnum=#{upnum} order by tablenum
+	</select>
+	
+	<!-- 예약폼 테이블,예약 join 보여주기 -->
+	<select id="viewResTable2" parameterType="int" resultType="table2">
+		select b.*, SUBSTR(a.RE_RESTIME,1,2) RESTIME, resdate from reserve a join ys_table b on a.tablenum = b.tablenum where a.upnum=#{upnum}
+	</select>
+	
+	
+		
+	<!-- 예약시 식당정보 보여주기 -->
+	<select id="selectRes" parameterType="int" resultType="res">
+		select * from restaurant where upnum=#{upnum}
+	</select>
+	
+	<!-- 예약하기 -->
+	<insert id="insertResvation" parameterType="reserv">
+		insert into reserve values(reserve_num_SEQ.nextval, #{idx}, #{re_resuser},#{re_restime},#{re_resname},#{upnum},#{tablenum},#{resdate})
+	</insert>
+	
+	<!-- 예약중인 테이블 가리기 -->
+	<select id="viewReserv" parameterType="int" resultType="reserv">
+		select * from reserve where upnum=#{upnum}
+	</select>
+	
+	<!-- 회원이 예약한 예약정보 확인하기 -->
+	<select id="selectResv" parameterType="int" resultType="reserv2">
+		select num, b.upnum, upwriter, uprestaurant, upphon, uplocation, a.idx, RE_RESTIME, SUBSTR(a.resdate,6,7) diresmonth, SUBSTR(a.resdate,9,10) diresdate, 
+		resdate, tablenum from reserve a join restaurant b on a.upnum = b.upnum where a.idx=#{idx} order by resdate
+	</select>
+	
+	<!-- 회원 예약 취소하기 -->
+	<delete id="delResve" parameterType="int">
+		delete from reserve where num=#{num}
+	</delete>
+	
+	<!-- 오너가 예약 내역 확인하기 -->
+	<select id="OwnerCheck" parameterType="int" resultType="owner">
+		select re.upnum, re.re_resname, re.re_resuser, re.re_restime, re.resdate, num, r.idx owner, re.idx memb, email, hp1, hp2, hp3, penalty   
+		from restaurant r JOIN reserve re on r.upnum=re.upnum 
+		JOIN  member m on re.idx = m.idx where r.idx=#{idx} order by resdate
+	</select>
+	
+	<!-- 오너가 예약 삭제하기 -->
+	<delete id="deloResve" parameterType="int">
+		delete from reserve where num=#{num}
+	</delete>
+	
+	<!-- 오너가 회원에게 패널티 추가하기 -->
+	<update id="uppenalty" parameterType="map">
+		update member set penalty=#{penalty} where idx=#{idx}
+		
+	</update>
+	
+	<!-- 회원 패널티 가져오기 -->
+	<select id="selectMember" parameterType="int" resultType="Member">
+		select nvl(penalty,0) penalty from member where idx=#{idx}
+	</select>
+	
+	<!-- 업주가 준 패널티 여부 flag로 보여주기 -->
+	<select id="selectflag" parameterType="int" resultType="flag">
+		select * from flag where idx=#{idx}
+	</select>
+	
+	<!-- 회원 패널티 추가전 플래그에 1 입력하기  -->
+	<insert id="insertflag" parameterType="flag">
+		insert into flag values(flag_flagnum_SEQ.nextval, 1, #{idx}, #{num})
+	</insert>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

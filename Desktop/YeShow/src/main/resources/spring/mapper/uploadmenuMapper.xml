@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0/EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="upload.model.uploadmenuMapper">
+	
+	
+	<!-- 업로드된 식당 main에 보여주기 -->
+	<select id="selectMenu" resultType="menu" parameterType="int">
+		select *
+		from menu m join restaurant r 
+		on m.upnum=r.upnum 
+		where r.upnum=#{upnum}
+	</select>
+
+
+
+
+	<!-- 식당에 메뉴 등록하기 -->
+	<insert id="insertMenu" parameterType="menu">
+		insert into menu values(menu_menunum_seq.nextval, #{menuname},#{menuprice}, #{menuinfo},#{menuimage},#{upnum},#{idx})
+	</insert>
+	
+	<!-- 식당에 메뉴 삭제 -->
+	<delete id="deleteMenu" parameterType="int">
+		delete from menu where menunum=#{menunum}
+	</delete>
+	
+	
+	
+	<!-- 업로드된 식당 리뷰 보여주기 -->
+	<select id="selectResReview" resultType="resreview" parameterType="int">
+		select * from res_review where upnum=#{upnum} order by res_reviewnum desc
+	</select>
+	
+	<!-- 식당리뷰 업로드하기 -->
+	<insert id="insertResReview" parameterType="resreview">
+		insert into res_review values(res_review_seq.nextval, #{res_reviewMsg},#{res_reviewWriter}, sysdate, #{upnum},#{idx},#{res_star})
+	</insert>
+	
+	<!-- 식당리뷰 삭제하기 -->
+	<delete id="deleteresrivew" parameterType="int">
+		delete from res_review where res_reviewnum=#{res_reviewnum}
+	</delete>
+	
+	
+	
+	<!-- 식당 최소가격 보여주기 -->
+	<select id="minprice" resultType="price">
+		select upnum, min(menuprice) leastprice from menu group by upnum
+	</select>
+	
+	<!-- 식당 이미지 보여주기 -->
+	<select id="selectAllImg" resultType="res" parameterType="int">
+		select upiname from images where upnum=#{upnum}
+	</select>
+	
+	
+	
+	
+	
+	<!-- 테이블 업로드하기 -->
+	<insert id="tableup" parameterType="table">
+		insert into ys_table values(ys_table_tablenum_SEQ.nextval, #{tableuser},#{opentime1},#{closetime1},#{opentime2},#{closetime2},#{upnum},#{idx})
+	</insert>
+	
+	
+	<!-- 테이블 수 보여주기 -->
+	<select id="selectTableQ" parameterType="int" resultType="tableq">
+		select tableuser, count(tableuser) tnumber from ys_table where upnum=#{upnum} group by tableuser 
+	</select>
+	
+	<!-- 테이블 삭제하기 -->
+	<delete id="delTeble" parameterType="int">
+		delete from ys_table where upnum=#{upnum}
+	</delete>
+	
+	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- Uncomment and your base-package here:
+         <context:component-scan
+            base-package="org.springframework.samples.web"/>  -->
+    <!-- 박장호 -->
+	<context:component-scan base-package="ye.controller,ye.model,ye.service"/>
+	<context:component-scan base-package="common.util"/>
+
+	<!-- 김덕호 -->
+	<context:component-scan base-package="memberBoard.controller"/>
+	<context:component-scan base-package="common.controller, upload.service, upload.model"/>
+	<!-- 정광희  -->
+	<context:component-scan
+      base-package="board.controller,board.model,board.service"/>
+    <!-- 이정식 -->
+     <context:component-scan
+      base-package="oboard.service, oboard.controller, oboard.model, common.file, common.interceptor"/> 
+	
+	<!-- 채종인 -->
+	<context:component-scan base-package="test.Controller,test.model,test.service"/>
+	
+    <mvc:annotation-driven />
+    
+    <!-- ====mvc-config.xml에 인터셉터를 등록========== -->
+	 <!--  <mvc:interceptors>
+	   	<mvc:interceptor>
+	   		<mvc:mapping path="/board/**"/>
+	   		<bean class="common.interceptor.OwnerCheckInterceptor"/>
+	   	</mvc:interceptor>
+	   </mvc:interceptors>  -->
+	<!-- ============================================= -->
+ 
+
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	        <!-- Example: a logical view name of 'showMessage' is mapped to '/WEB-INF/jsp/showMessage.jsp' -->
+	        <property name="prefix" value="/WEB-INF/view/"/>
+	        <property name="suffix" value=".jsp"/>
+	</bean>
+	
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="-1"/>
+		<property name="defaultEncoding" value="UTF-8"/>
+	</bean>
+
+
+</beans>

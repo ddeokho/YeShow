@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0/EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="note.model.NoteMapper">
+	<insert id="insertNote" parameterType="Note">
+		insert into userboard values(USERBOARD_QNA_IDX_SEQ.nextval,
+		#{qna_userid:VARCHAR}, #{qna_title:VARCHAR}, #{qna_content:VARCHAR}, #{qna_Img1:VARCHAR},
+		#{qna_Img2:VARCHAR}, #{qna_Img3:VARCHAR}, #{qna_Img4:VARCHAR}, sysdate, #{idx:NUMERIC}, 0)
+	</insert>
+	
+	<select id="getTotalCount" parameterType="Paging" resultType="int">
+		select count(*) from userboard where 1=1
+	</select>
+	
+	<select id="ListAllNote" parameterType="Paging" resultType="Note">
+		select * from(select row_number() over(order by qna_idx desc) rn, userboard.*
+		from userboard) where rn between #{start} and #{end}
+	</select>
+	
+	<delete id="deleteBoard" parameterType="int">
+		delete from userboard where qna_idx=#{idx}
+	</delete>
+	
+	<select id="getListByIdx" parameterType="int" resultType="Note">
+		select * from userboard where qna_idx=#{qna_idx}
+	</select>
+	
+	<select id="getnocomment" resultType="int">
+		select count(*) from userboard where ch = '0'
+	</select>
+</mapper>

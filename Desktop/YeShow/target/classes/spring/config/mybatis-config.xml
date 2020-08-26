@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configuration
+ PUBLIC "-//mybatis.org/DTD Config 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<typeAliases>
+	<!--  -->
+		<typeAlias type="ye.model.MemberVO" alias="Member"/>
+	
+	
+	<!-- 김덕호 -->
+		<typeAlias type="upload.model.uploadVO" alias="res"/>
+		<typeAlias type="upload.model.uploadmenuVO" alias="menu"/>
+		<typeAlias type="upload.model.resReviewVO" alias="resreview"/>
+		<typeAlias type="upload.model.resfileVO" alias="resfile"/>
+		<typeAlias type="upload.model.resviewVO" alias="star"/>
+		<typeAlias type="upload.model.leastmenupriceVO" alias="price"/>
+		<typeAlias type="upload.model.tableupVO" alias="table"/>
+		<typeAlias type="upload.model.tableup2VO" alias="table2"/>
+		<typeAlias type="upload.model.tableqVO" alias="tableq"/>
+		<typeAlias type="upload.model.reservationVO" alias="reserv"/>
+		<typeAlias type="upload.model.reservation2VO" alias="reserv2"/>
+		<typeAlias type="upload.model.OwnerCheckVO" alias="owner"/>
+		<typeAlias type="upload.model.flagVO" alias="flag"/>
+		
+	<!-- 정광희 -->
+		<typeAlias type="board.model.BoardVO" alias="Board"/>
+ 		<typeAlias type="board.model.FileVO" alias="File"/>
+	<!-- 이정식 -->	
+		<typeAlias type="oboard.model.OBoardVO" alias="oBoard"/>
+		
+	<!-- 채종인 -->
+		<typeAlias type="test.model.PagingVO" alias="Paging"/>
+		<typeAlias type="test.model.NoteVO" alias="Note"/>
+ 		<typeAlias type="test.model.ReNoteVO" alias="ReNote"/>		
+ 		
+	</typeAliases>
+	
+	<mappers>
+		<mapper resource="spring/mapper/MemberMapper.xml"/>
+		
+		<!-- 김덕호 -->
+		<mapper resource="spring/mapper/uploadResMapper.xml"/>
+		<mapper resource="spring/mapper/uploadmenuMapper.xml"/>
+		
+		<!-- 정광희  -->
+		<mapper resource="spring/mapper/BoardMapper.xml"/>
+ 		<mapper resource="spring/mapper/FileMapper.xml"/>
+ 		<!-- 이정식 -->
+ 		<mapper resource="spring/mapper/OBoardMapper.xml"/>
+ 		
+ 		<!-- 채종인 -->
+ 		<mapper resource="spring/mapper/NoteMapper.xml"/>
+ 		<mapper resource="spring/mapper/ReNoteMapper.xml"/>
+ 		
+	</mappers>
+</configuration>

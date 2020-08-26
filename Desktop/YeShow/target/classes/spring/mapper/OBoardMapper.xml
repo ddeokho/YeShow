@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="oboard.model.OBoardMapper">
+	<!-- 단순형 게시판 글쓰기  -->
+	<insert id="insertBoard_old" 
+		parameterType="oBoard">
+		insert into board values(board_idx_seq.nextval,
+		#{name}, #{email:VARCHAR},#{homepage:VARCHAR},
+		#{pwd},#{subject:VARCHAR},#{content:VARCHAR},
+		SYSTIMESTAMP,#{readnum:NUMERIC},#{filename:VARCHAR},
+		#{filesize:NUMERIC},#{refer:NUMERIC},#{lev:NUMERIC},
+		#{sunbun:NUMERIC})
+	</insert>
+	<!-- 답변형 게시판 글쓰기  -->
+	<insert id="insertBoard" 
+		parameterType="oBoard">
+		insert into board values(board_idx_seq.nextval,
+		#{name}, #{email:VARCHAR},#{homepage:VARCHAR},
+		#{pwd},#{subject:VARCHAR},#{content:VARCHAR},
+		SYSTIMESTAMP,#{readnum:NUMERIC},#{filename:VARCHAR},
+		#{filesize:NUMERIC},board_idx_seq.currval,#{lev:NUMERIC},
+		#{sunbun:NUMERIC})
+	</insert>
+	
+	
+	<!-- 게시글 수 가져오기 -->
+	<select id="totalCount" resultType="int"
+	 parameterType="oboard.model.OPagingVO">
+		select count(*) from board where 1=1
+		<if test="findType != null and findString !=''">
+			<choose>
+				<when test="findType ==1">
+					and subject like '%'||#{findString}||'%' 
+				</when>
+				<when test="findType ==2">
+					and name like '%'||#{findString}||'%' 
+				</when>
+				<when test="findType ==3">
+					and content like '%'||#{findString}||'%' 
+				</when>
+				<otherwise>
+					and subject like '%'||#{findString}||'%' 
+				</otherwise>
+			</choose>
+		</if>
+	</select>
+	
+	
+	<!-- 단순형 게시판 목록 가져오기 -->
+	<select id="listBoard" parameterType="map"
+	 resultType="oBoard">
+	select * from(
+select row_number() over(order by idx desc) rn,board.*,
+(sysdate-  to_date(to_char(wdate,'yyyy-mm-dd'))) as newImg 
+ from board
+) where rn between #{start} and #{end}
+	</select>
+	
+	
+	<!-- PagingVO를 이용한 게시판 목록 가져오기 -->
+	<select id="listBoardPaging"
+	 parameterType="oboard.model.OPagingVO"
+	 resultType="oBoard">
+	select * from(
+select row_number() over(order by refer desc, sunbun asc) rn,
+ board.*,
+(sysdate-to_date(to_char(wdate,'yyyy-mm-dd')) ) as newImg,
+(select count(*) from reply where idx_fk=idx) as replyCount
+from board where 1=1
+	<if test="findType !=null and findString !=''">
+	   <choose>
+	   		<when test="findType==1">
+	   		 and subject like '%'||#{findString}||'%'	
+	   		</when>
+	   		<when test="findType==2">
+	   		 and name like '%'||#{findString}||'%'	
+	   		</when>
+	   		<when test="findType==3">
+	   		 and content like '%'||#{findString}||'%'	
+	   		</when>
+	   		<otherwise>
+	   		 and subject like '%'||#{findString}||'%'
+	   		</otherwise>
+	   </choose>	   
+	</if>
+) where rn between #{start} and #{end}
+	</select>	
+	
+	<!--글 내용보기 관련: 조회수 증가  -->
+	<update id="updateReadnum" parameterType="int">
+		update board set readnum=readnum+1 where idx=#{idx}
+	</update>
+	
+	<!--글번호로 글 내용 보기  -->
+	<select id="selectBoardByIdx" parameterType="int"
+	resultType="oBoard">
+		select * from board where idx=#{idx}
+	</select>	
+	
+	<!--글삭제, 글수정 관련: 특정 글 비번 가져오기  -->
+	<select id="selectPwd" parameterType="int"
+	 resultType="string">
+	 select pwd from board where idx=#{idx}
+	</select>
+	
+	<!--글 삭제 처리  -->
+	<delete id="deleteBoard" parameterType="int">
+	delete from board where idx=#{idx}
+	</delete>
+	
+	<!-- 글 수정 처리 -->
+	<update id="updateBoard" parameterType="oBoard">
+	update board set name=#{name}, subject=#{subject},
+	email=#{email:VARCHAR}, pwd=#{pwd},
+	homepage=#{homepage:VARCHAR},content=#{content:VARCHAR},
+	filename=#{filename:VARCHAR},filesize=#{filesize:NUMERIC},
+	wdate=systimestamp where idx=#{idx}
+	</update>
+	
+	<!--[1단계] 답변글 쓰기 관련: 원글의 refer,lev,sunbun가져오기  -->
+	<select id="selectRefLevSunbun" parameterType="int"
+	resultType="oBoard">
+	select refer,lev, sunbun from board where idx=#{idx}
+	</select>
+	<!--[2단계] 답변글 쓰기 관련: 이미 달린 답변 글 들이
+	있다면 sunbun을 하나씩 증가 시켜 뒤로 밀어내자.
+	내 답변글이 가장 위에 끼어들어야 하므로.  -->
+	<update id="updateSunbun" parameterType="oBoard">
+		update board set sunbun=sunbun+1
+		where refer=#{refer} and sunbun > #{sunbun}
+	</update>
+	
+	<!--[3단계] 답변글 쓰기 관련: 답변글을 insert한다.  -->
+	<insert id="insertRewrite" parameterType="oBoard">
+		insert into board values(board_idx_seq.nextval,
+		#{name},#{email:VARCHAR},#{homepage:VARCHAR},
+		#{pwd},#{subject:VARCHAR},#{content:VARCHAR},
+		systimestamp,#{readnum:NUMERIC},
+		#{filename:VARCHAR},#{filesize:NUMERIC},
+		#{refer},#{lev},#{sunbun})
+	</insert>
+	
+	<!--리플 달기 처리  -->
+	<insert id="insertReply" 
+	parameterType="oboard.model.OReplyVO">
+	insert into reply(num,name,userid,content,wdate,idx_fk)
+	values(reply_num_seq.nextval,#{name:VARCHAR},
+	#{userid:VARCHAR},#{content:VARCHAR},
+	systimestamp,#{idx_fk:NUMERIC} )
+	</insert>
+	
+	<!--리플 목록 가져오기  -->
+	<select id="listReply" parameterType="int"
+			  resultType="oboard.model.OReplyVO">
+	select * from reply where idx_fk=#{value} order by num asc
+	</select>
+	
+	<!--리플 갯수 가져오기  -->
+	<select id="countReply" resultType="int"
+	 parameterType="int">
+		select count(*) from reply where idx_fk=#{idx}
+	</select>
+			
+</mapper>
+
+
+
+
+
+
+

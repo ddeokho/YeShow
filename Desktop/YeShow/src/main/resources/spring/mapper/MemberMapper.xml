@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0/EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ye.model.MemberMapper">
+	<!--회원가입  -->
+	<insert id="insertMember" parameterType="Member">
+		insert into member(idx,name,userid1,email,pwd1,hp1,hp2,hp3,post,addr1,addr2,
+		indate,status) values(member_idx_seq.nextval,#{name},#{userid1},#{email},
+		#{pwd1},#{hp1},#{hp2},#{hp3},#{post},#{addr1},#{addr2},sysdate,#{status},0)
+	</insert>
+	
+	<!-- ID 중복체크 -->
+	<select id="idCheck" parameterType="string" resultType="int">
+		select idx from member where userid1=#{userid1}	 
+	</select>
+	
+	<!-- 로그인 처리 -->
+	<select id="findMemberByUserid" parameterType="string"
+	 resultType="Member">
+		select * from member where userid1=#{userid}
+	</select>
+	
+	<!-- 회원 수정 -->
+	<select id="findMember" parameterType="int" resultType="Member">
+		select * from member where idx=#{idx}		
+	</select>
+	
+	<update id="updateMember" parameterType="Member" >
+		update member set pwd1=#{pwd1},
+		email=#{email:VARCHAR}, hp1=#{hp1:VARCHAR},
+		 hp2=#{hp2:VARCHAR}, hp3=#{hp3:VARCHAR},
+		 post=#{post:VARCHAR},
+		 addr1=#{addr1},
+		 addr2=#{addr2:VARCHAR}
+		where idx=#{idx}
+	</update>
+	
+	<delete id="deleteMember" parameterType="int">
+		delete from member where idx=#{idx}
+	</delete>
+	
+	<!-- 회원 아이디 찾기 -->
+	<select id="finduserid" parameterType="map" resultType="string">
+		select userid1 from member where name=#{name} and email=#{email}
+	</select>
+	
+	<!-- 회원 비밀번호 찾기 -->
+	<select id="findpwd" parameterType="map" resultType="string">
+		select pwd1 from member where userid1=#{userid1} and email=#{email}
+	</select>
+	
+	<!-- 회원관리의 총 회원수 가져오기 -->
+	<select id="getTotalCount" parameterType="Paging" resultType="int">
+		select count(*) from member where 1=1
+		<if test="findSta != null">
+	   <choose>
+	   		<when test="findSta==0">
+	   		 and status like #{findSta}	
+	   		</when>
+	   		<when test="findSta==1">
+	   		 and status like #{findSta}	
+	   		</when>
+	   		<when test="findSta==2">
+	   		 and status like #{findSta}	
+	   		</when>
+	   </choose>
+	   </if>
+		<if test="findType != null and findString !=''">
+			<choose>
+	   		<when test="findType==001">
+	   		 and userid1 like '%'||#{findString}||'%'	
+	   		</when>
+	   		<when test="findType==010">
+	   		 and idx like '%'||#{findString}||'%'	
+	   		</when>	   		
+	   		<otherwise>
+	   		 and userid1 like '%'||#{findString}||'%'
+	   		</otherwise>
+	   </choose>
+		</if>
+	</select>
+	
+	<!-- 회원관리의 회원 리스트 보기 -->
+	<select id="allmemberList" parameterType="Paging" resultType="Member">
+		select * from(select row_number() over(order by idx desc) rn, member.*
+		from member) where rn between #{start} and #{end} 
+		<if test="findSta != null and findSta !=''">
+	   <choose>
+	   		<when test="findSta==0">
+	   		 and status like #{findSta}	
+	   		</when>
+	   		<when test="findSta==1">
+	   		 and status like #{findSta}	
+	   		</when>
+	   		<when test="findSta==2">
+	   		 and status like #{findSta}	
+	   		</when>		   			   		
+	   </choose>
+	   </if>
+		<if test="findType !=null and findString !='' and findSta != null">
+	   <choose>
+	   		<when test="findType==001">
+	   		 and userid1 like '%'||#{findString}||'%'	
+	   		</when>
+	   		<when test="findType==010">
+	   		 and idx like '%'||#{findString}||'%'	
+	   		</when>	   		
+	   		<otherwise>
+	   		 and idx like '%'||#{findString}||'%'
+	   		</otherwise>
+	   </choose>
+	   </if>
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+

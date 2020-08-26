@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board.model.BoardMapper">
+	
+	<!-- 단순형 게시판 글쓰기  -->
+	<insert id="insertBoard"
+	 parameterType="board.model.BoardVO">
+		insert into member_board values(Member_Board_mb_num_seq.nextval, #{idx:NUMERIC}, #{upnum:NUMERIC},#{mb_title:VARCHAR},
+		#{mb_userid:VARCHAR},#{mb_contents:VARCHAR},#{mb_recommand:NUMERIC},
+		#{mb_score:NUMERIC},#{mb_hits:NUMERIC},#{mb_select:VARCHAR},SYSTIMESTAMP)
+	</insert>
+
+	<!-- 게시글 수 가져오기 -->
+	<select id="totalCount" resultType="int"
+	 parameterType="board.model.PagingVO">
+		select count(*) from member_board where 1=1
+		<if test="findType != null and findString !=''">
+			<choose>
+				<when test="findType ==1">
+					and mb_title like '%'||#{findString}||'%' 
+				</when>
+				<when test="findType ==2">
+					and mb_userid like '%'||#{findString}||'%' 
+				</when>
+				<when test="findType ==3">
+					and mb_contents like '%'||#{findString}||'%' 
+				</when>
+				<otherwise>
+					and mb_title like '%'||#{findString}||'%' 
+				</otherwise>
+			</choose>
+		</if>
+	</select>
+	
+	<!--  단순형 게시판 목록 가져오기 -->
+	<select id="listBoard" parameterType="map"
+	 resultType="Board">
+	select * from(select row_number() over(order by mb_num desc) rn, member_board.*,
+	(sysdate-to_date(to_char(mb_indate,'yyyy-mm-dd'))) from member_board) where rn between #{start} and #{end}
+	</select> 
+	
+	
+	<!-- PagingVO를 이용한 게시판 목록 가져오기 -->
+	<select id="listBoardPaging"
+	 parameterType="board.model.PagingVO"
+	 resultType="Board">
+	select * from(select row_number() over(order by mb_num desc) rn, member_board.*,
+(sysdate-to_date(to_char(mb_indate,'yyyy-mm-dd'))) from member_board where 1=1
+	<if test="findType !=null and findString !=''">
+	   <choose>
+	   		<when test="findType==1">
+	   		 and mb_title like '%'||#{findString}||'%'	
+	   		</when>
+	   		<when test="findType==2">
+	   		 and mb_userid like '%'||#{findString}||'%'	
+	   		</when>
+	   		<when test="findType==3">
+	   		 and mb_contents like '%'||#{findString}||'%'	
+	   		</when>
+	   		<otherwise>
+	   		 and mb_title like '%'||#{findString}||'%'
+	   		</otherwise>
+	   </choose>	   
+	</if>
+) where rn between #{start} and #{end}
+	</select>
+	
+	
+	<!--글 내용보기 관련: 조회수 증가  -->
+	<update id="updatemb_hits" parameterType="int">
+		update member_board set mb_hits=mb_hits+1 where mb_num=#{mb_num}
+	</update>
+	
+	 <!--글 내용보기 관련: 추천 수 증가  -->
+
+	<update id="updatemb_recommand" parameterType="int">
+		update member_board set mb_recommand=mb_recommand+1 where mb_num=#{mb_num}
+	</update>
+	
+	<!--글번호로 글 내용 보기  -->
+	<select id="selectBoardBymb_num" parameterType="int"
+	resultType="Board">
+		select * from member_board where mb_num=#{mb_num}
+	</select>
+	
+
+	<!--글 번호로 글 삭제  -->
+	<delete id="deleteBoard" parameterType="int">
+		delete from member_board where mb_num=#{mb_num}
+	</delete>
+	
+	<!-- 글 수정 처리 -->
+	<update id="updateBoard" parameterType="Board">
+	update member_board set mb_userid=#{mb_userid}, mb_title=#{mb_title},
+	mb_contents=#{mb_contents},mb_recommand=#{mb_recommand},mb_score=#{mb_score},mb_hits=#{mb_hits},
+	mb_indate=systimestamp where mb_num=#{mb_num}
+	</update>
+	
+</mapper>
+
+<!-- 
+	<insert id="insertBoard"
+	 parameterType="board.model.BoardVO">
+		insert into member_board values(mb_num_seq.nextval, 1, 1,#{mb_title:VARCHAR},
+		#{mb_userid:VARCHAR},#{mb_contents:VARCHAR},#{mb_recommand:NUMERIC},
+		#{mb_score:NUMERIC},#{mb_hits:NUMERIC},SYSTIMESTAMP,#{mb_select:VARCHAR})
+	</insert> -->
+
+
+
+
